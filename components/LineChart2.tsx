@@ -148,7 +148,6 @@ export function LineChart2() {
     []
   )
 
-  // Toggle line visibility
   const toggleLineVisibility = (line: keyof typeof visibleLines) => {
     setVisibleLines((prev) => ({
       ...prev,
