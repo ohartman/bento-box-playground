@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { CartesianGrid, Line, LineChart, XAxis } from "recharts"
+import { CartesianGrid, Line, LineChart, XAxis, Legend } from "recharts"
 import { useTheme } from "next-themes"
 
 import {
@@ -126,12 +126,19 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
+
 export function LineChart2() {
   const { theme } = useTheme()
   const lineColor = theme === "light" ? "#000000" : "teal"
 
-  const [activeChart, setActiveChart] =
-    React.useState<keyof typeof chartConfig>("desktop")
+  // State for active chart line
+  const [activeChart, setActiveChart] = React.useState<keyof typeof chartConfig>("desktop")
+  
+  // State to track visibility of each line
+  const [visibleLines, setVisibleLines] = React.useState({
+    desktop: true,
+    mobile: true,
+  })
 
   const total = React.useMemo(
     () => ({
@@ -140,6 +147,14 @@ export function LineChart2() {
     }),
     []
   )
+
+  // Toggle line visibility
+  const toggleLineVisibility = (line: keyof typeof visibleLines) => {
+    setVisibleLines((prev) => ({
+      ...prev,
+      [line]: !prev[line],
+    }))
+  }
 
   return (
     <Card>
@@ -212,12 +227,47 @@ export function LineChart2() {
                 />
               }
             />
-            <Line
-              dataKey={activeChart}
-              type="monotone"
-              stroke={lineColor}
-              strokeWidth={2}
-              dot={false}
+            {/* Render lines based on visibility state */}
+            {visibleLines.desktop && (
+              <Line
+                dataKey="desktop"
+                type="monotone"
+                stroke={lineColor}
+                strokeWidth={2}
+                dot={false}
+              />
+            )}
+            {visibleLines.mobile && (
+              <Line
+                dataKey="mobile"
+                type="monotone"
+                stroke={lineColor}
+                strokeWidth={2}
+                dot={false}
+              />
+            )}
+            {/* Custom Legend */}
+            <Legend
+              verticalAlign="top"
+              align="right"
+              height={36}
+              payload={[
+                {
+                  value: chartConfig.desktop.label,
+                  type: "line",
+                  id: "desktop",
+                  color: lineColor,
+                  inactive: !visibleLines.desktop,
+                },
+                {
+                  value: chartConfig.mobile.label,
+                  type: "line",
+                  id: "mobile",
+                  color: lineColor,
+                  inactive: !visibleLines.mobile,
+                },
+              ]}
+              onClick={(e) => toggleLineVisibility(e.id)}
             />
           </LineChart>
         </ChartContainer>
