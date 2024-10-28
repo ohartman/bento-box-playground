@@ -30,13 +30,9 @@ export function Component() {
   const { theme } = useTheme()
   const chartColor = theme === "light" ? "#000000" : "teal"
 
-  // State for zooming
   const [zoom, setZoom] = useState({ start: 0, end: chartData.length - 1 })
-
-  // Minimum zoom range to prevent fully zooming into one data point
   const minRange = 2
 
-  // Helper function to zoom in, centered around the midpoint
   const handleZoomIn = () => {
     const range = zoom.end - zoom.start
     if (range > minRange) {
@@ -50,10 +46,8 @@ export function Component() {
     }
   }
 
-  // Helper function to zoom out, expanding the range
   const handleZoomOut = () => {
     if (zoom.start === 0 && zoom.end === chartData.length - 1) {
-      // Already at the full range
       return
     }
 
@@ -67,21 +61,25 @@ export function Component() {
     })
   }
 
-  // Helper function to pan left
   const handlePanLeft = () => {
-    const step = 1 // Number of indices to shift
+    const step = 1
+    const newStart = Math.max(0, zoom.start - step)
+    const newEnd = newStart + (zoom.end - zoom.start)
+    
     setZoom({
-      start: Math.max(0, zoom.start - step),
-      end: Math.min(chartData.length - 1, zoom.end - step),
+      start: newStart,
+      end: Math.min(chartData.length - 1, newEnd),
     })
   }
 
-  // Helper function to pan right
   const handlePanRight = () => {
-    const step = 1 // Number of indices to shift
+    const step = 1
+    const newEnd = Math.min(chartData.length - 1, zoom.end + step)
+    const newStart = newEnd - (zoom.end - zoom.start)
+    
     setZoom({
-      start: Math.min(chartData.length - 1 - (zoom.end - zoom.start), zoom.start + step),
-      end: Math.min(chartData.length - 1, zoom.end + step),
+      start: Math.max(0, newStart),
+      end: newEnd,
     })
   }
 
