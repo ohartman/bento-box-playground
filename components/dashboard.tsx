@@ -1,23 +1,10 @@
 "use client"
 
-import { TrendingUp } from "lucide-react"
+import { useState } from "react"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 import { useTheme } from "next-themes"
-
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 const chartData = [
   { month: "January", desktop: 186, mobile: 80 },
@@ -43,6 +30,61 @@ export function Component() {
   const { theme } = useTheme()
   const chartColor = theme === "light" ? "#000000" : "teal"
 
+  // State for zooming
+  const [zoom, setZoom] = useState({ start: 0, end: chartData.length - 1 })
+
+  // Minimum zoom range to prevent fully zooming into one data point
+  const minRange = 2
+
+  // Helper function to zoom in, centered around the midpoint
+  const handleZoomIn = () => {
+    const range = zoom.end - zoom.start
+    if (range > minRange) {
+      const mid = Math.floor((zoom.start + zoom.end) / 2)
+      const newRange = Math.max(minRange, Math.floor(range / 2))
+
+      setZoom({
+        start: Math.max(0, mid - Math.floor(newRange / 2)),
+        end: Math.min(chartData.length - 1, mid + Math.floor(newRange / 2)),
+      })
+    }
+  }
+
+  // Helper function to zoom out, expanding the range
+  const handleZoomOut = () => {
+    if (zoom.start === 0 && zoom.end === chartData.length - 1) {
+      // Already at the full range
+      return
+    }
+
+    const range = zoom.end - zoom.start
+    const mid = Math.floor((zoom.start + zoom.end) / 2)
+    const newRange = Math.min(chartData.length, range * 2)
+
+    setZoom({
+      start: Math.max(0, mid - Math.floor(newRange / 2)),
+      end: Math.min(chartData.length - 1, mid + Math.floor(newRange / 2)),
+    })
+  }
+
+  // Helper function to pan left
+  const handlePanLeft = () => {
+    const step = 1 // Number of indices to shift
+    setZoom({
+      start: Math.max(0, zoom.start - step),
+      end: Math.min(chartData.length - 1, zoom.end - step),
+    })
+  }
+
+  // Helper function to pan right
+  const handlePanRight = () => {
+    const step = 1 // Number of indices to shift
+    setZoom({
+      start: Math.min(chartData.length - 1 - (zoom.end - zoom.start), zoom.start + step),
+      end: Math.min(chartData.length - 1, zoom.end + step),
+    })
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -52,8 +94,9 @@ export function Component() {
       <CardContent>
         <ChartContainer config={chartConfig}>
           <AreaChart
-            accessibilityLayer
-            data={chartData}
+            width={500}
+            height={300}
+            data={chartData.slice(zoom.start, zoom.end + 1)}
             margin={{
               left: 12,
               right: 12,
@@ -98,14 +141,38 @@ export function Component() {
         </ChartContainer>
       </CardContent>
       <CardFooter>
-        <div className="flex w-full items-start gap-2 text-sm">
-          <div className="grid gap-2">
-            <div className="flex items-center gap-2 font-medium leading-none">
-              Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-            </div>
-            <div className="flex items-center gap-2 leading-none text-muted-foreground">
-              January - June 2024
-            </div>
+        <div className="flex w-full items-center justify-between mt-4">
+          <div className="flex gap-2">
+            <button
+              onClick={handleZoomIn}
+              className="px-3 py-1 text-sm font-medium text-white rounded-md shadow-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-colors"
+              style={{ backgroundColor: chartColor }}
+            >
+              Zoom In
+            </button>
+            <button
+              onClick={handleZoomOut}
+              className="px-3 py-1 text-sm font-medium text-white rounded-md shadow-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-colors"
+              style={{ backgroundColor: chartColor }}
+            >
+              Zoom Out
+            </button>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handlePanLeft}
+              className="px-3 py-1 text-sm font-medium text-white rounded-md shadow-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-colors"
+              style={{ backgroundColor: chartColor }}
+            >
+              ◀
+            </button>
+            <button
+              onClick={handlePanRight}
+              className="px-3 py-1 text-sm font-medium text-white rounded-md shadow-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-colors"
+              style={{ backgroundColor: chartColor }}
+            >
+              ▶
+            </button>
           </div>
         </div>
       </CardFooter>
