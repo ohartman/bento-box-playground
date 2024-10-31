@@ -6,7 +6,6 @@ import { useTheme } from "next-themes"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartContainer } from "@/components/ui/chart"
 
-// Minimal data to initialize the epochs in the chart layout
 const chartData = [
   { epoch: "Epoch 0" },
   { epoch: "Epoch 1" },
@@ -18,7 +17,6 @@ const chartData = [
   { epoch: "End" }
 ]
 
-// Independent line data with random Y values
 const randomLineData = [
   { epoch: "Epoch 0", value: 300 },
   { epoch: "Epoch 1", value: 250 },
@@ -30,7 +28,6 @@ const randomLineData = [
   { epoch: "End", value: 0 }
 ]
 
-// Configuration for supply line color
 const chartConfig = {
   supply: {
     label: "Supply",
@@ -38,7 +35,6 @@ const chartConfig = {
   },
 }
 
-// Array of objects to display multiple values in each box
 const infoBoxes = [
   { title: "Claims", max: 9000, min: 1000 },
   { title: "Claims", max: 4500, min: 500 },
@@ -78,7 +74,6 @@ export function LineChart2() {
             />
             <YAxis hide domain={[0, 'auto']} />
 
-            {/* ReferenceLines at each Epoch boundary, omitting label for "End" */}
             {chartData.map((entry, index) => (
               <ReferenceLine
                 key={index}
@@ -86,18 +81,17 @@ export function LineChart2() {
                 stroke="gray"
                 strokeDasharray="3 3"
                 label={
-                  entry.epoch !== "End" // Add label only if not "End"
+                  entry.epoch !== "End"
                     ? {
                         value: entry.epoch,
                         position: "top",
                         style: { fontSize: 12, fill: "gray", transform: "translateX(7%)" },
-                      }
-                    : null
+                      } as any
+                    : undefined
                 }
               />
             ))}
 
-            {/* Independent Line with random data points */}
             <Line
               data={randomLineData}
               dataKey="value"
@@ -110,7 +104,6 @@ export function LineChart2() {
           </LineChart>
         </ChartContainer>
 
-        {/* Information Boxes aligned under each epoch, with the last one hidden */}
         <div className="flex justify-between mt-4 gap-2">
           {infoBoxes.map((info, index) => (
             <div
